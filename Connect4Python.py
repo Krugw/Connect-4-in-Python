@@ -41,29 +41,21 @@ class Board:
                 print '\n'
 
         def winner(self, player):
-                if self.colWin(player) == 0:
-                        print ('\n'
+                win = lambda x: ('\n'
                                 +"###################"
-                                +'\n'+player+" player wins!!"
+                                +'\n'+x+" player wins!!"
                                 +'\n'+"###################")
+                if self.colWin(player) == 0:
+                        print win(player)
                         return 0
                 if self.rowWin(player) == 0:
-                        print ('\n'
-                                +"###################"
-                                +'\n'+player+" player wins!!"
-                                +'\n'+"###################")
+                        print win(player)
                         return 0
                 if self.diagPosWin(player) == 0:
-                        print ('\n'
-                                +"###################"
-                                +'\n'+player+" player wins!!"
-                                +'\n'+"###################")
+                        print win(player)
                         return 0
                 if self.diagNegWin(player) == 0:
-                        print ('\n'
-                                +"###################"
-                                +'\n'+player+" player wins!!"
-                                +'\n'+"###################")
+                        print win(player)
                         return 0
                 return 1
                 
@@ -71,67 +63,31 @@ class Board:
                 Counter = 0
                 CTP = ''
                 for a in self.board:
-                        for b in a:
-                                if Counter == 0 and b != '.':
-                                        Counter += 1
-                                        CTP = b
-                                if Counter > 0 and b!= '.':
-                                        if CTP == b:
-                                                Counter += 1
-                                        else:
-                                                Counter = 1
-                                                CTP = b
-                                if Counter == self.winAmount+1:
-                                        return 0
-                        Counter = 0
-                        CTP = ''
-                return 1
+                        return scan(a, player)
+
 
         def rowWin(self, player):
                 Counter = 0
                 CTP = ''
                 for a in zip(*self.board):
-                        for b in a:
-                                if Counter == 0 and b != '.':
-                                        Counter += 1
-                                        CTP = b
-                                if Counter > 0 and b!= '.':
-                                        if CTP == b:
-                                                Counter += 1
-                                        else:
-                                                Counter = 1
-                                                CTP = b
-                                if Counter == self.winAmount+1:
-                                        return 0
-                        Counter = 0
-                        CTP = ''
-                return 1
+                        return scan(a, player)
+
 
         def diagPosWin(self, player):
                 Counter = 0
                 CTP = ''
                 for a in diagonalsPos(self.board, self.col, self.row):
-                        for b in a:
-                                if Counter == 0 and b != '.':
-                                        Counter += 1
-                                        CTP = b
-                                if Counter > 0 and b!= '.':
-                                        if CTP == b:
-                                                Counter += 1
-                                        else:
-                                                Counter = 1
-                                                CTP = b
-                                if Counter == self.winAmount+1:
-                                        return 0
-                        Counter = 0
-                        CTP = ''
-                return 1
+                        return scan(a, player)
+
 
         def diagNegWin(self, player):
                 Counter = 0
                 CTP = ''
                 for a in diagonalsNeg(self.board, self.col, self.row):
-                        for b in a:
+                        return scan(a, player)
+
+        def scan(self, matrix, player):
+                for b in matrix:
                                 if Counter == 0 and b != '.':
                                         Counter += 1
                                         CTP = b
