@@ -1,3 +1,4 @@
+import pickle
 import sys
 from itertools import chain
 
@@ -45,21 +46,21 @@ class Board:
                                 +"###################"
                                 +'\n'+x+" player wins!!"
                                 +'\n'+"###################")
-                if self.colWin(player) == 0:
+                if self.colWin() == 0:
                         print win(player)
                         return 0
-                if self.rowWin(player) == 0:
+                if self.rowWin() == 0:
                         print win(player)
                         return 0
-                if self.diagPosWin(player) == 0:
+                if self.diagPosWin() == 0:
                         print win(player)
                         return 0
-                if self.diagNegWin(player) == 0:
+                if self.diagNegWin() == 0:
                         print win(player)
                         return 0
                 return 1
                 
-        def colWin(self, player):
+        def colWin(self):
                 Counter = 0
                 CTP = ''
                 for a in self.board:
@@ -79,7 +80,7 @@ class Board:
                         CTP = ''
                 return 1
 
-        def rowWin(self, player):
+        def rowWin(self):
                 Counter = 0
                 CTP = ''
                 for a in zip(*self.board):
@@ -99,7 +100,7 @@ class Board:
                         CTP = ''
                 return 1
 
-        def diagPosWin(self, player):
+        def diagPosWin(self):
                 Counter = 0
                 CTP = ''
                 for a in diagonalsPos(self.board, self.col, self.row):
@@ -119,7 +120,7 @@ class Board:
                         CTP = ''
                 return 1
 
-        def diagNegWin(self, player):
+        def diagNegWin(self):
                 Counter = 0
                 CTP = ''
                 for a in diagonalsNeg(self.board, self.col, self.row):
@@ -139,10 +140,19 @@ class Board:
                         CTP = ''
                 return 1
 
+	def saveGame(self,objectName,fileName):
+                with open(fileName, "wb") as f:
+                         pickle.dump(objectName, f)
+
+        def loadGame(self,objectName,fileName):
+                with open(fileName, "rb") as f:
+                        objectName = pickle.load(f)
+                return objectName
+
 class BoardError(Exception):
         def __init__(self, arg):
                 self.msg = arg
-        
+
 if __name__ == '__main__':
         #Trys to create new board
         try: game = Board(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
@@ -181,12 +191,14 @@ if __name__ == '__main__':
                 turn = REDPLAYER
                 playerPrint = "White"
                 validToken = 0
+		validInput = 0
                 
         #START OF GAME
         print "WELCOME TO CONNECT 4 IN PYTHON!!"
-        while runningGame == 1:
+
+	while runningGame == 1:		
                 game.printBoard()
-                print playerPrint+" player, Enter coloumn: "
+                print playerPrint+" player, Enter column: "
                 while validToken == 0:
                         try:
                                 tokenCol = input(">> ")
@@ -200,6 +212,9 @@ if __name__ == '__main__':
                         except NameError:
                                 print "Not a valid column!"
                                 print "Enter a new column: "
+			except SyntaxError:
+				print "Not a valid column!"
+				print "Enter a new column: "
                         else: validToken = 1
                 runningGame = game.winner(playerPrint)
                 turn = BLACKPLAYER if turn == REDPLAYER else REDPLAYER
