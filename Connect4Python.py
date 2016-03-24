@@ -1,6 +1,8 @@
 import pickle
 import sys
 from itertools import chain
+import os
+import shelve
 
 EMPTY = '.'
 REDPLAYER = 'W'
@@ -8,13 +10,13 @@ BLACKPLAYER = 'B'
 
 #Changes matrix to a positive diag (bottom-left to upper-right)
 def diagonalsPos (matrix, col, row):
-	for di in ([(j, i - j) for j in range(col)] for i in range(col + row -1)):
-		yield [matrix[i][j] for i, j in di if i >= 0 and j >= 0 and i < col and j < row]
-		
+        for di in ([(j, i - j) for j in range(col)] for i in range(col + row -1)):
+                yield [matrix[i][j] for i, j in di if i >= 0 and j >= 0 and i < col and j < row]
+                
 #Changes matrix to a negitive diag (bottom-right to upper-left)
 def diagonalsNeg (matrix, col, row):
-	for di in ([(j, i - col + j + 1) for j in range(col)] for i in range(col + row - 1)):
-		yield [matrix[i][j] for i, j in di if i >= 0 and j >= 0 and i < col and j < row]
+        for di in ([(j, i - col + j + 1) for j in range(col)] for i in range(col + row - 1)):
+                yield [matrix[i][j] for i, j in di if i >= 0 and j >= 0 and i < col and j < row]
 
 class Board:
         def __init__(self, col, row, winAmount):
@@ -140,11 +142,11 @@ class Board:
                         CTP = ''
                 return 1
 
-	def saveGame(self,objectName,fileName):
+        def saveGame(self,objectName,fileName):
                 with open(fileName, "wb") as f:
                          pickle.dump(objectName, f)
 
-        def loadGame(self,objectName,fileName):
+        def loadGame(self,fileName):
                 with open(fileName, "rb") as f:
                         objectName = pickle.load(f)
                 return objectName
@@ -154,6 +156,8 @@ class BoardError(Exception):
                 self.msg = arg
 
 if __name__ == '__main__':
+        clear = lambda: os.system('cls')
+        
         #Trys to create new board
         try: game = Board(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 
@@ -162,8 +166,9 @@ if __name__ == '__main__':
         #col, row and win amount to be optimal
         except IndexError:
                 print ("Invalid input! Make sure to add columns, rows and length to win in this format:"
-                               +'\n'+"FILENAME.py NUMBEROFCOLUMNS NUMBEROFROWS LENGTHTOWIN"
-                               +'\n'+"Ending Program...")
+                                +'\n'+"FILENAME.py NUMBEROFCOLUMNS NUMBEROFROWS LENGTHTOWIN"
+                                +'\n'+"The default game input is: \'python Connect4Python.py 6 7 4\'"
+                                +'\n'+"Ending Program...")
                 raise SystemExit
         except ValueError:
                 print ("Values are of wrong type!"
@@ -191,18 +196,65 @@ if __name__ == '__main__':
                 turn = REDPLAYER
                 playerPrint = "White"
                 validToken = 0
-		validInput = 0
+                validInput = 0
+                fileName = ""
                 
-        #START OF GAME
+        clear()
+        #The following commands handle all exceptions
+        #with save/load game
         print "WELCOME TO CONNECT 4 IN PYTHON!!"
+        while validInput == 0:
+                print "Type \'1\' to start a new game or \'2\' to load an old game"
+                try:
+                        saveload = input(">> ")
+                        saveload = int(saveload)
+                        if saveload > 3 or saveload < 1:
+                                raise BoardError("Invalid number...")
+                        
+                except NameError:
+                        print "Not a valid input!"
+                except SyntaxError:
+                        print "Not a valid input!"
+                except BoardError, arg:
+                        print arg.msg
+                else: validInput = 1
 
-	while runningGame == 1:		
+        if saveload == 1:
+                print "Enter a game name: "
+                try: fileName = raw_input(">> ")
+                except SyntaxError:
+                        print "Error, ending program..."
+                        raise SystemExit
+                else: game.saveGame(game, fileName)
+        else:
+                print "Enter load name: "
+                try:
+                        fileName = raw_input(">> ")
+                        game = game.loadGame(fileName) 
+                except SyntaxError:
+                        print "Error, ending program..."
+                        raise SystemExit
+                except IOError:
+                        print "Error: File doesnt exist! Make sure you check spelling and correct capital letters"
+                        print "Ending program..."
+                        raise SystemExit
+        
+        #START OF GAME
+        while runningGame == 1:
+                clear()
+                game.saveGame(game, fileName)
                 game.printBoard()
                 print playerPrint+" player, Enter column: "
+                print "or type \'end\' to save and quit"
                 while validToken == 0:
                         try:
-                                tokenCol = input(">> ")
-                                game.placeToken(tokenCol, turn)
+                                tokenCol = raw_input(">> ")
+                                if tokenCol == "end":
+                                        print "Ending..."
+                                        raise SystemExit
+                                else:
+                                        tokenCol = int(tokenCol)
+                                        game.placeToken(tokenCol, turn)
                         except BoardError, arg:
                                 print arg.msg
                                 print "Enter a new column: "
@@ -212,15 +264,22 @@ if __name__ == '__main__':
                         except NameError:
                                 print "Not a valid column!"
                                 print "Enter a new column: "
-			except SyntaxError:
-				print "Not a valid column!"
-				print "Enter a new column: "
+                        except SyntaxError:
+                                print "Not a valid column!"
+                                print "Enter a new column: "
+                        except ValueError:
+                                print "Not a valid column!"
+                                print "Enter a new column: " 
                         else: validToken = 1
                 runningGame = game.winner(playerPrint)
                 turn = BLACKPLAYER if turn == REDPLAYER else REDPLAYER
                 playerPrint = "Black" if playerPrint == "White" else "White"
                 validToken = 0
-
+                
+        #This overwrites the save so when loading it again it doesnt just show
+        #the end of game screen
+        game = Board(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+        game.saveGame(game, fileName)
         game.printBoard()
         
                 
