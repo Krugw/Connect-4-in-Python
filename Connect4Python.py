@@ -2,7 +2,7 @@ import pickle
 import sys
 from itertools import chain
 import os
-import shelve
+
 
 EMPTY = '.'
 REDPLAYER = 'W'
@@ -278,8 +278,8 @@ if __name__ == '__main__':
                 
         #This overwrites the save so when loading it again it doesnt just show
         #the end of game screen
+	game.printBoard()
         game = Board(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
         game.saveGame(game, fileName)
-        game.printBoard()
         
                 
